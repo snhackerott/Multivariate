@@ -10,7 +10,6 @@ if (!require("ggplot2")) install.packages("ggplot2")
 if (!require("dplyr")) install.packages("dplyr")
 if (!require("Hmisc")) install.packages("Hmisc")
 if (!require("corrplot")) install.packages("corrplot")
-if (!require("vegan")) install.packages("vegan")
 if (!require("FactoMineR")) install.packages("FactoMineR")
 if (!require("factoextra")) install.packages("factoextra")
 if (!require("ggpubr")) install.packages("ggpubr")
@@ -19,7 +18,6 @@ library(ggplot2) #Required for ggplots
 library(dplyr) #Required for data organization
 library(Hmisc) #Required for correlation matrix rcorr function
 library(corrplot) #Required for correlation plot
-library(vegan) #Required for PERMANOVA
 library(FactoMineR) #Required for custom PCA
 library(factoextra) #Required for custom PCA
 library(ggpubr) #Required for stat_conf_ellipse
@@ -64,8 +62,8 @@ PC1<-sprintf("%1.2f",get_eigenvalue(PCA)$variance.percent[1])
 PC1
 
 ##Extract % Variance PC 2
-PC2_Th_HA<-sprintf("%1.2f",get_eigenvalue(PCA)$variance.percent[2])
-PC2_Th_HA
+PC2<-sprintf("%1.2f",get_eigenvalue(PCA)$variance.percent[2])
+PC2
 
 ##Extract Individual Sample Scores
 PCA.scores <- as.data.frame(PCA$x[,c(1:2)])
@@ -77,11 +75,11 @@ PCA.scores<-merge(PCA.scores, DataFrame.st)
 
 
 #### Custom PCA Plot ####
-fviz_pca_biplot(PCA_Th_HA, repel=TRUE, geom = "none", col.var="black", labelsize=sig.sz)+
+fviz_pca_biplot(PCA, repel=TRUE, geom = "none", col.var="black", labelsize=sig.sz)+
   geom_point(aes(colour = PCA.scores$Group, shape=PCA.scores$Group), 
              size =3, alpha = 0.7)+
   theme_classic()+
-  labs(x=paste0('PC 1 (',PC1_Th_HA,"%)"), y=paste0('PC 2 (',PC2_Th_HA,"%)"), title=NULL)
+  labs(x=paste0('PC 1 (',PC1,"%)"), y=paste0('PC 2 (',PC2,"%)"), title=NULL)
 
 ##Option to add confidence interval ellipses
 #Add to ggplot object
@@ -112,3 +110,28 @@ fviz_pca_biplot(PCA_Th_HA, repel=TRUE, geom = "none", col.var="black", labelsize
 #      legend.text=element_text(size=12), 
 #      legend.title=element_text(size=15),
 #      legend.box.background = element_rect(color = "black"))
+
+
+#### Variable Contributions ####
+
+##Variables by PC's
+PCA_var<-get_pca_var(PCA)
+corrplot(PCA_var$contrib, is.corr=FALSE)
+
+##PC1
+#Add Optional standard theme elements as preferred 
+fviz_contrib(PCA, choice = "var", axes = 1, top = 10)+
+  ggtitle("PC 1")+
+  theme(plot.title = element_text(colour="black", size=25, hjust=0.5))
+
+##PC2
+#Add Optional standard theme elements as preferred 
+fviz_contrib(PCA, choice = "var", axes = 2, top = 10)+
+  ggtitle("PC 2")+
+  theme(plot.title = element_text(colour="black", size=25, hjust=0.5))
+
+##PC1 and 2
+#Add Optional standard theme elements as preferred 
+fviz_contrib(PCA, choice = "var", axes = 1:2, top = 10)+
+  ggtitle("PC 1 and 2")+
+  theme(plot.title = element_text(colour="black", size=25, hjust=0.5))
